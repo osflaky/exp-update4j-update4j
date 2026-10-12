@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, ubuntu-24.04-arm, windows-11-arm, 
+            macos-15-intel, macos-latest]
+        java: ['9', '11', '17', '21', '25']
+      fail-fast: false
+      max-parallel: 10
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 9
+      uses: actions/setup-java@v3
+      with:
+        java-version: '${{ matrix.java }}'
+        distribution: 'zulu'
+        cache: maven
+    - name: Build
+      run: mvn --batch-mode -DskipTests package
+
+    - name: Test
+      run: mvn --batch-mode test
+    name: leg ${{ matrix.os }} | ${{ matrix.java }}
+    timeout-minutes: 150
